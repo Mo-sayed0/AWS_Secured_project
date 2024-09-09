@@ -7,21 +7,20 @@ resource "aws_vpc" "vpc_ـHA_3-Tire" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name        = var.vpc_ـHA_3-Tire
+    Name        = "var.vpc_ـHA_3-Tire"
     Environment = "demo_environment"
-    Terraform   = "true"
   }
 }
 
 #Deploy the private subnets
 resource "aws_subnet" "private_subnets_HA" {
-  for_each          = var.private_subnets
-  vpc_id            = aws_vpc.vpc.id
+  for_each          = "var.private_subnets"
+  vpc_id            = aws_vpc.vpc_ـHA_3-Tire.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
   availability_zone = tolist(data.aws_availability_zones.available.names)[each.value]
 
   tags = {
-    Name      = "Private_Subnet_HA_3-Tire"
+    Name  = "Private_Subnet_HA_3-Tire"
     Group = "DolfenEd"
   }
 }
@@ -29,41 +28,41 @@ resource "aws_subnet" "private_subnets_HA" {
 #Deploy the public subnets
 resource "aws_subnet" "public_subnets_HA" {
   for_each                = var.public_subnets
-  vpc_id                  = aws_vpc.vpc.id
+  vpc_id                  = aws_vpc.vpc_ـHA_3-Tire.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
   availability_zone       = tolist(data.aws_availability_zones.available.names)[each.value]
   map_public_ip_on_launch = true
 
   tags = {
-    Name      = "Public_Subnet_HA_3-Tire"
+    Name  = "Public_Subnet_HA_3-Tire"
     Group = "DolfenEd"
   }
 }
 
 #Create route tables for public and private subnets
 resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc_ـHA_3-Tire.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
-    gateway_id     = aws_internet_gateway.internet_gateway.id
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.internet_gateway.id
     #nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
-    Name      = "Public_rtb_HA"
+    Name = "Public_rtb_HA"
   }
 }
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc_ـHA_3-Tire.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     # gateway_id     = aws_internet_gateway.internet_gateway.id
     nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
-    Name      = "private_rtb_HA"
+    Name = "private_rtb_HA"
   }
 }
 
@@ -84,7 +83,7 @@ resource "aws_route_table_association" "private" {
 
 #Create Internet Gateway
 resource "aws_internet_gateway" "internet_gateway" {
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.vpc_ـHA_3-Tire.id
   tags = {
     Name = "igw_HA_3-Tire"
   }
