@@ -1,7 +1,3 @@
-#Retrieve the list of AZs in the current AWS region
-data "aws_availability_zones" "available" {}
-data "aws_region" "current" {}
-
 #Define the VPC
 resource "aws_vpc" "vpc" {
   cidr_block = var.vpc_cidr
@@ -13,29 +9,56 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-#Deploy the private subnets
+#Deploy the private subnets for us-east-1a
 resource "aws_subnet" "private_subnets" {
   for_each          = var.private_subnets
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
-  availability_zone = tolist(data.aws_availability_zones.available.names)[each.value]
+  availability_zone = var.availability_zone.availability_zone_1a
 
   tags = {
-    Name      = each.key
+    Name      = "Priavet_Subnet_1a"
     Terraform = "true"
   }
 }
 
-#Deploy the public subnets
+#Deploy the public subnets us-east-1a
 resource "aws_subnet" "public_subnets" {
   for_each                = var.public_subnets
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
-  availability_zone       = tolist(data.aws_availability_zones.available.names)[each.value]
+  availability_zone       = var.availability_zone.availability_zone_1a
   map_public_ip_on_launch = true
 
   tags = {
-    Name      = each.key
+    Name      = "public_subnet_1a"
+    Terraform = "true"
+  }
+}
+
+#Deploy the private subnets for us-east-1b
+resource "aws_subnet" "private_subnets_2" {
+  for_each          = var.private_subnets
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
+  availability_zone = var.availability_zone.availability_zone_1b
+
+  tags = {
+    Name      = "Priavet_Subnet_1b"
+    Terraform = "true"
+  }
+}
+
+#Deploy the public subnets for us-east-1b
+resource "aws_subnet" "public_subnets_2" {
+  for_each                = var.public_subnets
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
+  availability_zone       = var.availability_zone.availability_zone_1b
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name      = "public_subnet_1b"
     Terraform = "true"
   }
 }
