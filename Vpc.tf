@@ -9,57 +9,103 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-#Deploy the private subnets for us-east-1a
-resource "aws_subnet" "private_subnets" {
-  for_each          = var.private_subnets
+#Deploy the private subnets for us-east-1a subnet1
+resource "aws_subnet" "private_subnet_1" {
   vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
+  cidr_block        = "10.0.128.0/20"
   availability_zone = var.availability_zone.availability_zone_1a
 
   tags = {
-    Name      = "Priavet_Subnet_1a"
+    Name      = "Priavet_Subnet_1"
+    Terraform = "true"
+  }
+}
+
+#Deploy the private subnets for us-east-1a subnet3
+resource "aws_subnet" "private_subnet_3" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.160.0/20"
+  availability_zone = var.availability_zone.availability_zone_1a
+
+  tags = {
+    Name      = "Priavet_Subnet_3"
     Terraform = "true"
   }
 }
 
 #Deploy the public subnets us-east-1a
-resource "aws_subnet" "public_subnets" {
-  for_each                = var.public_subnets
+resource "aws_subnet" "public_subnet_1" {
   vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
+  cidr_block              = "10.0.0.0/20"
   availability_zone       = var.availability_zone.availability_zone_1a
   map_public_ip_on_launch = true
 
   tags = {
-    Name      = "public_subnet_1a"
+    Name      = "public_subnet_1"
     Terraform = "true"
   }
 }
 
 #Deploy the private subnets for us-east-1b
-resource "aws_subnet" "private_subnets_2" {
-  for_each          = var.private_subnets
+resource "aws_subnet" "private_subnet_2" {
   vpc_id            = aws_vpc.vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, each.value)
+  cidr_block        = "10.0.144.0/20"
   availability_zone = var.availability_zone.availability_zone_1b
 
   tags = {
-    Name      = "Priavet_Subnet_1b"
+    Name      = "Priavet_Subnet_2"
+    Terraform = "true"
+  }
+}
+
+#Deploy the private subnets for us-east-1b
+resource "aws_subnet" "private_subnet_4" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.176.0/20"
+  availability_zone = var.availability_zone.availability_zone_1b
+
+  tags = {
+    Name      = "Priavet_Subnet_4"
     Terraform = "true"
   }
 }
 
 #Deploy the public subnets for us-east-1b
-resource "aws_subnet" "public_subnets_2" {
-  for_each                = var.public_subnets
+resource "aws_subnet" "public_subnet_2" {
   vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, 8, each.value + 100)
+  cidr_block              = "10.0.16.0/20"
   availability_zone       = var.availability_zone.availability_zone_1b
   map_public_ip_on_launch = true
 
   tags = {
-    Name      = "public_subnet_1b"
+    Name      = "public_subnet_2"
     Terraform = "true"
+  }
+}
+
+#Create Internet Gateway
+resource "aws_internet_gateway" "internet_gateway" {
+  vpc_id = aws_vpc.vpc.id
+  tags = {
+    Name = "demo_igw"
+  }
+}
+
+#Create EIP for NAT Gateway
+resource "aws_eip" "nat_gateway_eip" {
+  domain     = "vpc"
+  depends_on = [aws_internet_gateway.internet_gateway]
+  tags = {
+    Name = "demo_igw_eip"
+  }
+}
+
+#Create NAT Gateway
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = aws_eip.nat_gateway_eip.id
+  subnet_id     = aws_subnet.public_subnet_1.id
+  tags = {
+    Name = "demo_nat_gateway"
   }
 }
 
@@ -83,7 +129,7 @@ resource "aws_route_table" "private_route_table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    # gateway_id     = aws_internet_gateway.internet_gateway.id
+    #gateway_id     = aws_internet_gateway.internet_gateway.id
     nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   tags = {
@@ -93,43 +139,31 @@ resource "aws_route_table" "private_route_table" {
 }
 
 #Create route table associations
-resource "aws_route_table_association" "public" {
-  depends_on     = [aws_subnet.public_subnets]
+resource "aws_route_table_association" "public_1" {
   route_table_id = aws_route_table.public_route_table.id
-  for_each       = aws_subnet.public_subnets
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.public_subnet_1.id
+}
+resource "aws_route_table_association" "public_2" {
+  route_table_id = aws_route_table.public_route_table.id
+  subnet_id      = aws_subnet.public_subnet_2.id
 }
 
-resource "aws_route_table_association" "private" {
-  depends_on     = [aws_subnet.private_subnets]
+resource "aws_route_table_association" "private_1" {
   route_table_id = aws_route_table.private_route_table.id
-  for_each       = aws_subnet.private_subnets
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.private_subnet_1.id
 }
 
-#Create Internet Gateway
-resource "aws_internet_gateway" "internet_gateway" {
-  vpc_id = aws_vpc.vpc.id
-  tags = {
-    Name = "demo_igw"
-  }
+resource "aws_route_table_association" "private_2" {
+  route_table_id = aws_route_table.private_route_table.id
+  subnet_id      = aws_subnet.private_subnet_2.id
 }
 
-#Create EIP for NAT Gateway
-resource "aws_eip" "nat_gateway_eip" {
-  domain     = "vpc"
-  depends_on = [aws_internet_gateway.internet_gateway]
-  tags = {
-    Name = "demo_igw_eip"
-  }
+resource "aws_route_table_association" "private_3" {
+  route_table_id = aws_route_table.private_route_table.id
+  subnet_id      = aws_subnet.private_subnet_3.id
 }
 
-#Create NAT Gateway
-resource "aws_nat_gateway" "nat_gateway" {
-  depends_on    = [aws_subnet.public_subnets]
-  allocation_id = aws_eip.nat_gateway_eip.id
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
-  tags = {
-    Name = "demo_nat_gateway"
-  }
+resource "aws_route_table_association" "private_4" {
+  route_table_id = aws_route_table.private_route_table.id
+  subnet_id      = aws_subnet.private_subnet_4.id
 }
