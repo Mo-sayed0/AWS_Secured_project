@@ -2,7 +2,7 @@
 
 
 
-# AWS_Secured_project
+# AWS_Secured_project_3-Tier
 implement project in AWS console and HCL terraform 
 
 **Situation**
