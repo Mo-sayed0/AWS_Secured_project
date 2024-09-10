@@ -1,6 +1,6 @@
 variable "vpc_name" {
   type    = string
-  default = "demo_vpc_HA"
+  default = "vpc_HA_3-Tire"
 }
 
 variable "vpc_cidr" {
