@@ -9,76 +9,29 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-#Deploy the private subnets for us-east-1a subnet1
-resource "aws_subnet" "private_subnet_1" {
+# Deploy the private subnets
+resource "aws_subnet" "private_subnets" {
+  count             = var.private_subnet_count
   vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.128.0/20"
-  availability_zone = var.availability_zone.availability_zone_1a
+  cidr_block        = cidrsubnet(var.vpc_cidr, 4, count.index + 8)
+  availability_zone = var.availability_zones[count.index % length(var.availability_zones)]
 
   tags = {
-    Name      = "Priavet_Subnet_1"
+    Name      = "Private_Subnet_${count.index + 1}"
     Terraform = "true"
   }
 }
 
-#Deploy the private subnets for us-east-1a subnet3
-resource "aws_subnet" "private_subnet_3" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.160.0/20"
-  availability_zone = var.availability_zone.availability_zone_1a
-
-  tags = {
-    Name      = "Priavet_Subnet_3"
-    Terraform = "true"
-  }
-}
-
-#Deploy the public subnets us-east-1a
-resource "aws_subnet" "public_subnet_1" {
+# Deploy the public subnets
+resource "aws_subnet" "public_subnets" {
+  count                   = var.public_subnet_count
   vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = "10.0.0.0/20"
-  availability_zone       = var.availability_zone.availability_zone_1a
+  cidr_block              = cidrsubnet(var.vpc_cidr, 4, count.index + 5)
+  availability_zone       = var.availability_zones[count.index % length(var.availability_zones)]
   map_public_ip_on_launch = true
 
   tags = {
-    Name      = "public_subnet_1"
-    Terraform = "true"
-  }
-}
-
-#Deploy the private subnets for us-east-1b
-resource "aws_subnet" "private_subnet_2" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.144.0/20"
-  availability_zone = var.availability_zone.availability_zone_1b
-
-  tags = {
-    Name      = "Priavet_Subnet_2"
-    Terraform = "true"
-  }
-}
-
-#Deploy the private subnets for us-east-1b
-resource "aws_subnet" "private_subnet_4" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.176.0/20"
-  availability_zone = var.availability_zone.availability_zone_1b
-
-  tags = {
-    Name      = "Priavet_Subnet_4"
-    Terraform = "true"
-  }
-}
-
-#Deploy the public subnets for us-east-1b
-resource "aws_subnet" "public_subnet_2" {
-  vpc_id                  = aws_vpc.vpc.id
-  cidr_block              = "10.0.16.0/20"
-  availability_zone       = var.availability_zone.availability_zone_1b
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name      = "public_subnet_2"
+    Name      = "public_Subnet_${count.index + 1}"
     Terraform = "true"
   }
 }
@@ -103,7 +56,7 @@ resource "aws_eip" "nat_gateway_eip" {
 #Create NAT Gateway
 resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.nat_gateway_eip.id
-  subnet_id     = aws_subnet.public_subnet_1.id
+  subnet_id     = aws_subnet.public_subnets[0].id
   tags = {
     Name = "nat_gateway_HA_3-Tire"
   }
@@ -138,32 +91,15 @@ resource "aws_route_table" "private_route_table" {
   }
 }
 
-#Create route table associations
-resource "aws_route_table_association" "public_1" {
+# Create route table associations
+resource "aws_route_table_association" "public" {
+  count          = var.public_subnet_count
   route_table_id = aws_route_table.public_route_table.id
-  subnet_id      = aws_subnet.public_subnet_1.id
-}
-resource "aws_route_table_association" "public_2" {
-  route_table_id = aws_route_table.public_route_table.id
-  subnet_id      = aws_subnet.public_subnet_2.id
+  subnet_id      = aws_subnet.public_subnets[count.index].id
 }
 
-resource "aws_route_table_association" "private_1" {
+resource "aws_route_table_association" "private" {
+  count          = var.private_subnet_count
   route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet_1.id
-}
-
-resource "aws_route_table_association" "private_2" {
-  route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet_2.id
-}
-
-resource "aws_route_table_association" "private_3" {
-  route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet_3.id
-}
-
-resource "aws_route_table_association" "private_4" {
-  route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet_4.id
+  subnet_id      = aws_subnet.private_subnets[count.index].id
 }
