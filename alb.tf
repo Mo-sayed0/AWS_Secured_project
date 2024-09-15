@@ -89,5 +89,3 @@ resource "aws_lb_target_group_attachment" "private_tg_attachment" {
   target_id        = aws_instance.app_ec2[count.index].id
   port             = 80
 }
-
-a
