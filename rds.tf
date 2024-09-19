@@ -1,21 +1,21 @@
-# Random string for DB password
+
+# RDS
 resource "random_password" "db_password" {
   length  = 16
   special = false
 }
 
-# RDS Subnet Group
 resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "rds-subnet-group"
-  subnet_ids = [for subnet in aws_subnet.private_subnets : subnet.id]
+  subnet_ids = aws_subnet.private_subnets_db[*].id
+
   tags = {
     Name = "RDS Subnet Group"
   }
 }
 
-# RDS Instance
 resource "aws_db_instance" "mysql_rds" {
-  count                  = var.private_subnet_count >= 3 ? 1 : 0
+  count                  = var.private_subnet_count_db
   identifier             = "myapp-rds-instance"
   engine                 = "mysql"
   engine_version         = "8.0"
@@ -26,22 +26,24 @@ resource "aws_db_instance" "mysql_rds" {
   username               = "admin"
   password               = random_password.db_password.result
   parameter_group_name   = "default.mysql8.0"
-  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.id
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [aws_security_group.sg_db.id]
   multi_az               = true
   publicly_accessible    = false
   skip_final_snapshot    = true
+
   tags = {
     Name = "MyApp-RDS-Instance"
   }
 }
 
+
 # Output the RDS endpoint
 output "rds_endpoint" {
-  value = var.private_subnet_count >= 3 ? aws_db_instance.mysql_rds[0].endpoint : "Not enough private subnets for RDS"
+  value = aws_db_instance.mysql_rds[0].endpoint
 }
 
-# Output the RDS password (Be cautious with this in production environments)
+# Outputs
 output "rds_password" {
   value     = random_password.db_password.result
   sensitive = true
