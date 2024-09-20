@@ -29,12 +29,12 @@ Action
 1.⁠ ⁠Plan the CIDR Blocks for VPC and Subnets
 
 VPC: 10.0.0.0/16
-Public Subnet 1: 10.0.80.0/20
-Public Subnet 2: 10.0.96.0/20
-Private Subnet 1: 10.0.128.0/20
-Private Subnet 2: 10.0.144.0/20
-Private Subnet 3: 10.0.160.0/20
-Private Subnet 4: 10.0.176.0/20
+Public Subnet 1: 10.0.64.0/20
+Public Subnet 2: 10.0.80.0/20
+Private Subnet 1: 10.0.96.0/20
+Private Subnet 2: 10.0.112.0/20
+Private Subnet Db 1: 10.0.32.0/20
+Private Subnet Db 2: 10.0.48.0/20
 
 2.⁠ ⁠Create the VPC and Subnets
 
