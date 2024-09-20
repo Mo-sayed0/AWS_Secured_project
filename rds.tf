@@ -40,7 +40,7 @@ resource "aws_db_instance" "mysql_rds" {
 
 # Output the RDS endpoint
 output "rds_endpoint" {
-  value = aws_db_instance.mysql_rds[0].endpoint
+  value = aws_db_instance.mysql_rds[1].endpoint
 }
 
 # Outputs
