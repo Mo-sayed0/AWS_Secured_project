@@ -15,8 +15,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 }
 
 resource "aws_db_instance" "mysql_rds" {
-  count                  = var.private_subnet_count_db
-  identifier             = "myapp-rds-instance-${count.index + 1}"
+  identifier             = "myapp-rds-instance"
   engine                 = "mysql"
   engine_version         = "8.0"
   instance_class         = "db.t3.micro"
@@ -40,7 +39,7 @@ resource "aws_db_instance" "mysql_rds" {
 
 # Output the RDS endpoint
 output "rds_endpoint" {
-  value = aws_db_instance.mysql_rds[*].endpoint
+  value = aws_db_instance.mysql_rds.endpoint
 }
 
 # Outputs
