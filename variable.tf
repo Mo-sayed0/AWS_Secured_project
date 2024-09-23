@@ -37,12 +37,12 @@ variable "availability_zones" {
 
 variable "key_name" {
   description = "name of ssh key "
-  type = string
-   default = "Terraform-Project"
+  type        = string
+  default     = "Terraform-Project"
 }
 
 variable "key_path" {
   description = "path of key pair"
-  type = string
-  default = "~/.ssh/Terraform-Project.pem"
+  type        = string
+  default     = "~/.ssh/Terraform-Project.pem"
 }

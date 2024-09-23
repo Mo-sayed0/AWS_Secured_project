@@ -1,5 +1,5 @@
 resource "aws_key_pair" "ssh_key" {
-  key_name = var.key_name
+  key_name   = var.key_name
   public_key = file(var.key_path)
 }
 
@@ -27,7 +27,7 @@ resource "aws_launch_template" "app_launch_template" {
   image_id               = data.aws_ami.image.id
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.sg_app.id]
-  key_name               = var.key_name 
+  key_name               = var.key_name
 
   tag_specifications {
     resource_type = "instance"
