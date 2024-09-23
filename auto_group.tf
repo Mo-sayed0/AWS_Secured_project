@@ -22,6 +22,7 @@ resource "aws_launch_template" "app_launch_template" {
   image_id               = data.aws_ami.image.id
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.sg_app.id]
+  user_data              = base64encode(file("${path.module}/script1.sh"))
   key_name               = var.key_name
   tag_specifications {
     resource_type = "instance"

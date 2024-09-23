@@ -39,7 +39,7 @@ resource "aws_security_group" "sg_app" {
     content {
       from_port       = ingress.value
       to_port         = ingress.value
-      protocol        = "tcp"
+      protocol        = "-1"
       security_groups = [aws_security_group.sg_web.id]
     }
   }
@@ -68,7 +68,7 @@ resource "aws_security_group" "sg_db" {
     content {
       from_port       = ingress.value
       to_port         = ingress.value
-      protocol        = "tcp"
+      protocol        = "-1"
       security_groups = [aws_security_group.sg_app.id]
     }
   }
