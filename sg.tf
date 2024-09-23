@@ -6,7 +6,7 @@ resource "aws_security_group" "sg_web" {
   vpc_id      = aws_vpc.vpc.id
 
   dynamic "ingress" {
-    for_each = [80, 443]
+    for_each = [80, 443, 22]
     content {
       from_port   = ingress.value
       to_port     = ingress.value
