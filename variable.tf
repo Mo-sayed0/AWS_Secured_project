@@ -35,6 +35,12 @@ variable "availability_zones" {
   default     = ["us-east-1a", "us-east-1b"]
 }
 
+variable "key_name" {
+  description = "name of ssh key "
+  type = string
+   default = "Terraform-Project"
+}
+
 variable "key_path" {
   description = "path of key pair"
   type = string
