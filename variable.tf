@@ -35,3 +35,8 @@ variable "availability_zones" {
   default     = ["us-east-1a", "us-east-1b"]
 }
 
+variable "key_path" {
+  description = "path of key pair"
+  type = string
+  default = "~/.ssh/Terraform-Project.pem"
+}
