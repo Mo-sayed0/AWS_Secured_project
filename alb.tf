@@ -43,15 +43,24 @@ resource "aws_lb_target_group" "public_tg" {
 }
 
 resource "aws_lb_target_group" "private_tg" {
-  name     = "private-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.vpc.id
+  name        = "private-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.vpc.id
+  target_type = "instance"
 
   health_check {
     path                = "/"
     healthy_threshold   = 2
-    unhealthy_threshold = 10
+    unhealthy_threshold = 5
+    timeout             = 5
+    interval            = 30
+    matcher             = "200-399" # Accept a broader range of successful responses
+  }
+  stickiness {
+    type            = "lb_cookie"
+    cookie_duration = 86400
+    enabled         = true
   }
 }
 

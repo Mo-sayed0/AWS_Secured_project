@@ -34,24 +34,24 @@ resource "aws_security_group" "sg_app" {
   name   = "appserver"
   vpc_id = aws_vpc.vpc.id
 
-  dynamic "ingress" {
-    for_each = local.egress_app
-    content {
-      from_port       = ingress.value
-      to_port         = ingress.value
-      protocol        = "-1"
-      security_groups = [aws_security_group.sg_web.id]
-    }
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_web.id]
   }
-
-  dynamic "egress" {
-    for_each = local.egress_app
-    content {
-      from_port   = egress.value
-      to_port     = egress.value
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+  ingress {
+    description     = "SSH from public subnets"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_web.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -68,7 +68,7 @@ resource "aws_security_group" "sg_db" {
     content {
       from_port       = ingress.value
       to_port         = ingress.value
-      protocol        = "-1"
+      protocol        = "tcp"
       security_groups = [aws_security_group.sg_app.id]
     }
   }
@@ -87,3 +87,4 @@ resource "aws_security_group" "sg_db" {
     Name = "HA_sg-db"
   }
 }
+
