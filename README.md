@@ -1,85 +1,127 @@
 ![Image](https://raw.githubusercontent.com/Mo-sayed0/mo/main/Project_Image.jpeg)
 
 
+# Highly Available 3-Tier AWS Infrastructure
+
+This project uses Terraform to deploy a highly available 3-tier architecture on AWS. The infrastructure includes a VPC with public and private subnets, auto-scaling groups, load balancers, and an RDS instance.
+
+## Architecture Overview
+
+1. **VPC**: A custom VPC with a configurable CIDR block.
+2. **Subnets**: 
+   - Public subnets for the web tier
+   - Private subnets for the application tier
+   - Private subnets for the database tier
+3. **Internet Gateway**: For public internet access
+4. **NAT Gateway**: For private subnets to access the internet
+5. **Route Tables**: Separate route tables for public and private subnets
+6. **Load Balancers**: 
+   - Public Application Load Balancer (ALB) for the web tier
+   - Private ALB for the application tier
+7. **Auto Scaling Groups**: 
+   - For the web tier in public subnets
+   - For the application tier in private subnets
+8. **RDS**: MySQL database in private subnets
+9. **Security Groups**: Separate security groups for web, app, and database tiers
+
+## Prerequisites
+
+- AWS CLI configured with appropriate credentials
+- Terraform installed (version 0.12+)
+- SSH key pair for EC2 instances
+
+## Usage
+
+1. Clone this repository:
+   ```
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+
+2. Initialize Terraform:
+   ```
+   terraform init
+   ```
+
+3. Review and modify variables in `variables.tf` as needed.
+
+4. Plan the deployment:
+   ```
+   terraform plan
+   ```
+
+5. Apply the configuration:
+   ```
+   terraform apply
+   ```
+
+6. When prompted, review the planned changes and enter `yes` to proceed.
+
+## Configuration
+
+The main configuration options are defined in `variables.tf`. Key variables include:
+
+- `vpc_name`: Name of the VPC
+- `vpc_cidr`: CIDR block for the VPC
+- `private_subnet_count`: Number of private subnets for the app tier
+- `private_subnet_count_db`: Number of private subnets for the database tier
+- `public_subnet_count`: Number of public subnets
+- `availability_zones`: List of AZs to use
+- `key_name`: Name of the SSH key pair
+- `key_path`: Path to the SSH key pair file
+
+## Components
+
+### Networking
+- VPC with customizable CIDR block
+- Public and private subnets across multiple Availability Zones
+- Internet Gateway for public subnets
+- NAT Gateway for private subnets
+- Route tables for public and private subnets
+
+### Compute
+- Launch Templates for web and app tiers
+- Auto Scaling Groups for web and app tiers
+- Application Load Balancers for web and app tiers
+
+### Database
+- RDS MySQL instance in private subnets
+- DB Subnet Group for RDS
+
+### Security
+- Security Groups for web, app, and database tiers
+- Network ACLs (optional, not implemented in the current version)
+
+## Outputs
+
+- `rds_endpoint`: The endpoint of the RDS instance
+- `rds_password`: The generated password for the RDS instance (sensitive)
+
+## Security Considerations
+
+- The RDS password is generated randomly and stored in the Terraform state. Ensure your state file is encrypted and stored securely.
+- SSH access is restricted to the bastion host (not implemented in this version).
+- All resources are created within a VPC for network isolation.
+
+## Scaling and High Availability
+
+- Auto Scaling Groups ensure the desired number of instances are running
+- Multi-AZ deployment for RDS provides database redundancy
+- Application Load Balancers distribute traffic across multiple instances and AZs
+
+## Cleanup
+
+To destroy the created resources:
+
+```
+terraform destroy
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 
 # AWS_Secured_project_3-Tier
 implement project in AWS console and HCL terraform 
 
-**Situation**
-You are tasked with creating a foundational multi-tier architecture in AWS, which includes a Web Tier, Application Tier, and Database Tier. The goal is to build each tier incrementally, ensuring each layer functions correctly before moving on to the next.
-
-**Objective**
-Web Tier:
-Create a public subnet with a minimum of 2 EC2 instances in an Auto Scaling Group.
-Configure a Security Group to allow inbound traffic from the internet.
-Deploy a static web page on the EC2 instances.
-
-2.⁠ ⁠Application Tier:
-
-Create private subnets with a minimum of 2 EC2 instances in an Auto Scaling Group.
-Configure a Security Group to allow inbound traffic from the Web Server Security Group.
-
-3.⁠ ⁠Database Tier:
-
-Deploy a MySQL RDS instance in private subnets.
-Configure a Security Group to allow inbound MySQL traffic from the Application Server Security Group.
-
-Action
-
-1.⁠ ⁠Plan the CIDR Blocks for VPC and Subnets
-
-VPC: 10.0.0.0/16
-Public Subnet 1: 10.0.64.0/20
-Public Subnet 2: 10.0.80.0/20
-Private Subnet 1: 10.0.96.0/20
-Private Subnet 2: 10.0.112.0/20
-Private Subnet Db 1: 10.0.32.0/20
-Private Subnet Db 2: 10.0.48.0/20
-
-2.⁠ ⁠Create the VPC and Subnets
-
-Use Terraform or AWS Console to create a VPC and subnets.
-
-3.⁠ ⁠Set Up the Web Tier
-
-Create Public Subnets: Create two public subnets in the VPC.
-Public Route Table: Create and associate a public route table with these subnets.
-Security Group: Create a Security Group allowing inbound HTTP/HTTPS traffic from the internet.
-Launch Configuration and Auto Scaling Group:
-Create a launch configuration with a user data script to bootstrap a static web page or use a custom AMI.
-Create an Auto Scaling Group with a minimum of 2 instances.
-
-4.⁠ ⁠Verify Web Tier
-
-Access the static web page via the public IP addresses of the EC2 instances.
-
-5.⁠ ⁠Set Up the Application Tier
-
-Create Private Subnets: Create two private subnets in the VPC.
-Private Route Table: Create and associate a private route table with these subnets. Add a route to the NAT Gateway for internet access.
-Security Group: Create a Security Group allowing inbound traffic from the Web Server Security Group.
-Launch Configuration and Auto Scaling Group:
-Create a launch configuration for application servers.
-Create an Auto Scaling Group with a minimum of 2 instances.
-
-6.⁠ ⁠Set Up the Database Tier
-
-Create MySQL RDS Instance:
-Create an RDS instance in one of the private subnets.
-Create a Security Group allowing inbound MySQL traffic from the Application Server Security Group.
-Multi-AZ Configuration (if needed):
-Configure Multi-AZ in the RDS settings for high availability.
-
-7.⁠ ⁠Additional Considerations
-
-NAT Gateway: Create a NAT Gateway in one of the public subnets and update the private route tables accordingly.
-Bastion Host or SSM:
-Set up a bastion host in the public subnet for SSH access to private instances.
-Alternatively, configure AWS Systems Manager (SSM) for accessing instances without a bastion host.
-Result
-By following this incremental approach, you will have:
-
-A fully functional Web Tier serving a static web page.
-An Application Tier prepared to run applications, securely isolated in private subnets.
-A Database Tier with a MySQL RDS instance, ready for application data storage.
-Ensure to verify the functionality at each step, and deallocate resources like NAT Gateways, Elastic IPs, and ALBs when not in use to avoid unnecessary costs. Document how to add Multi-AZ for RDS instances for future reference.
