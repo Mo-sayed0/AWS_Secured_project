@@ -121,7 +121,3 @@ terraform destroy
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-
-# AWS_Secured_project_3-Tier
-implement project in AWS console and HCL terraform 
-
